@@ -16,7 +16,26 @@
     />
     <link rel="stylesheet" href="./styles.css" />
   </head>
-  <body>
+  <body class="access-locked">
+    <section class="access-gate" id="access-gate" role="dialog" aria-modal="true" aria-labelledby="access-title">
+      <div class="access-gate-grid" aria-hidden="true"></div>
+      <div class="access-gate-sprite sprite-cyan" aria-hidden="true"></div>
+      <div class="access-gate-sprite sprite-pink" aria-hidden="true"></div>
+      <div class="access-gate-panel">
+        <p class="access-kicker">ORANGE.PIXEL_LAB / GATE_01</p>
+        <h1 id="access-title">ACCESS<br /><span>REQUIRED.</span></h1>
+        <p class="access-copy">输入准入密码，进入 Orange 的个人数字实验室。</p>
+        <form class="access-form" id="access-form" novalidate>
+          <label for="access-password">ACCESS CODE</label>
+          <div class="access-input-row">
+            <input id="access-password" name="password" type="password" inputmode="numeric" pattern="[0-9]*" autocomplete="current-password" maxlength="6" required aria-describedby="access-message" />
+            <button type="submit">ENTER <span>↗</span></button>
+          </div>
+          <p class="access-message" id="access-message" role="status" aria-live="polite"></p>
+        </form>
+        <p class="access-footnote">AUTHORIZED VISITORS ONLY / 2026</p>
+      </div>
+    </section>
     <div class="page-grain" aria-hidden="true"></div>
 
     <header class="site-header">

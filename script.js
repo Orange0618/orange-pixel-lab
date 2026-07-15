@@ -1,6 +1,48 @@
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 
+const ACCESS_CODE = '266502'
+const ACCESS_STORAGE_KEY = 'orange-pixel-lab-access-granted'
+const accessGate = document.querySelector('#access-gate')
+const accessForm = document.querySelector('#access-form')
+const accessPassword = document.querySelector('#access-password')
+const accessMessage = document.querySelector('#access-message')
+
+function unlockSite() {
+  sessionStorage.setItem(ACCESS_STORAGE_KEY, 'true')
+  document.body.classList.remove('access-locked')
+  accessGate?.setAttribute('aria-hidden', 'true')
+  window.setTimeout(() => accessGate?.setAttribute('hidden', ''), 180)
+}
+
+if (sessionStorage.getItem(ACCESS_STORAGE_KEY) === 'true') {
+  unlockSite()
+} else {
+  window.setTimeout(() => accessPassword?.focus(), 80)
+}
+
+accessForm?.addEventListener('submit', event => {
+  event.preventDefault()
+  const isCorrect = accessPassword?.value === ACCESS_CODE
+
+  if (isCorrect) {
+    accessMessage.textContent = 'ACCESS GRANTED. LOADING LAB...'
+    accessMessage.classList.remove('is-error')
+    accessMessage.classList.add('is-success')
+    window.setTimeout(unlockSite, 260)
+    return
+  }
+
+  accessMessage.textContent = 'ACCESS DENIED. 请检查密码后重试。'
+  accessMessage.classList.remove('is-success')
+  accessMessage.classList.add('is-error')
+  accessForm.classList.remove('is-invalid')
+  void accessForm.offsetWidth
+  accessForm.classList.add('is-invalid')
+  accessPassword?.focus()
+  accessPassword?.select()
+})
+
 const baseUrl = import.meta.env.BASE_URL
 const notesGrid = document.querySelector('#notes-grid')
 const reader = document.querySelector('#note-reader')
