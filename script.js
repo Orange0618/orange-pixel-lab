@@ -11,6 +11,8 @@ const readerContent = document.querySelector('#reader-content')
 const readerSource = document.querySelector('#reader-source')
 const readerToc = document.querySelector('#reader-toc')
 const readerTocLinks = document.querySelector('#reader-toc-links')
+const readerTocDetails = document.querySelector('#reader-toc-details')
+const readerTocCount = document.querySelector('#reader-toc-count')
 const directory = document.querySelector('#notes-directory')
 const directoryBack = document.querySelector('#directory-back')
 const directoryPath = document.querySelector('#directory-path')
@@ -21,6 +23,7 @@ const navLinks = document.querySelectorAll('.primary-nav a')
 const homeSections = [...document.querySelectorAll('main > section:not(.note-reader):not(.notes-directory)[id]')]
 let notes = []
 let tocHeadings = []
+const compactReaderQuery = window.matchMedia('(max-width: 1100px)')
 
 const html = value => DOMPurify.sanitize(value, { ALLOWED_TAGS: [] })
 const samePath = (left, right) => left.length === right.length && left.every((part, index) => part === right[index])
@@ -110,16 +113,24 @@ function updateTocActive() {
   })
 }
 
+function syncTocPresentation() {
+  if (!readerTocDetails || readerToc.hidden) return
+  readerTocDetails.open = !compactReaderQuery.matches
+}
+
 function buildTableOfContents() {
   tocHeadings = [...readerContent.querySelectorAll('h2, h3, h4')]
   if (!tocHeadings.length) {
     readerToc.hidden = true
     readerTocLinks.innerHTML = ''
+    readerTocCount.textContent = ''
     return
   }
   readerTocLinks.innerHTML = tocHeadings.map(heading => `
     <a class="toc-link toc-level-${heading.tagName.slice(1)}" href="#${heading.id}">${html(heading.textContent)}</a>`).join('')
   readerToc.hidden = false
+  readerTocCount.textContent = `${String(tocHeadings.length).padStart(2, '0')} ITEMS`
+  syncTocPresentation()
   requestAnimationFrame(updateTocActive)
 }
 
@@ -144,6 +155,7 @@ async function openNote(note) {
   readerContent.innerHTML = '<p class="reader-loading">LOADING_NOTE...</p>'
   readerToc.hidden = true
   readerTocLinks.innerHTML = ''
+  readerTocCount.textContent = ''
   tocHeadings = []
   readerSource.href = noteUrl(note)
   document.title = `${note.title} | Orange Pixel Lab`
@@ -177,6 +189,7 @@ function closeSpecialViews() {
   document.body.classList.remove('reading-mode', 'directory-mode')
   reader.hidden = true
   readerToc.hidden = true
+  readerTocCount.textContent = ''
   tocHeadings = []
   directory.hidden = true
   document.title = 'Orange | Pixel Lab'
@@ -221,10 +234,12 @@ async function initialiseNotes() {
 homeSections.forEach(section => sectionObserver.observe(section))
 window.addEventListener('hashchange', handleRoute)
 window.addEventListener('scroll', updateTocActive, { passive: true })
+compactReaderQuery.addEventListener('change', syncTocPresentation)
 readerTocLinks.addEventListener('click', event => {
   const link = event.target.closest('.toc-link')
   if (!link) return
   event.preventDefault()
   document.getElementById(link.getAttribute('href').slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  if (compactReaderQuery.matches) readerTocDetails.open = false
 })
 initialiseNotes()

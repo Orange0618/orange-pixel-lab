@@ -149,8 +149,14 @@
           <div class="reader-layout">
             <article class="markdown-body" id="reader-content"></article>
             <aside class="reader-toc" id="reader-toc" aria-label="文章大纲" hidden>
-              <p class="toc-label">OUTLINE</p>
-              <nav class="toc-links" id="reader-toc-links" aria-label="文章目录"></nav>
+              <details class="toc-details" id="reader-toc-details" open>
+                <summary>
+                  <span class="toc-label">OUTLINE</span>
+                  <span class="toc-count" id="reader-toc-count"></span>
+                  <span class="toc-toggle" aria-hidden="true">+</span>
+                </summary>
+                <nav class="toc-links" id="reader-toc-links" aria-label="文章目录"></nav>
+              </details>
             </aside>
           </div>
           <footer class="reader-footer">
