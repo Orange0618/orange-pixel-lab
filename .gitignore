@@ -4,3 +4,5 @@ public/notes/
 public/notes-assets/
 public/notes-manifest.json
 .DS_Store
+
+.vercel
