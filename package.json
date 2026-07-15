@@ -1,0 +1,20 @@
+{
+  "name": "orange-pixel-lab",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "sync:notes": "node scripts/sync-notes.mjs",
+    "verify:notes": "node scripts/verify-note-assets.mjs",
+    "build": "npm run sync:notes && npm run verify:notes && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "dompurify": "^3.2.6",
+    "marked": "^16.3.0"
+  },
+  "devDependencies": {
+    "vite": "^7.0.0"
+  }
+}
