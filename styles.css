@@ -150,3 +150,120 @@ body.reading-mode .reader-shell { width: min(1200px, calc(100% - 48px)); }
   .directory-shell, .reader-shell, body.reading-mode .reader-shell { width: calc(100% - 22px); }.note-reader, .notes-directory { padding-top: 24px; }
   .reader-header h1 { font-size: 31px; }.markdown-body { padding: 18px 12px; font-size: 14px; }.markdown-body h1 { font-size: 1.75em; }.markdown-body h2 { font-size: 1.42em; }.markdown-body h3 { font-size: 1.18em; }.markdown-body pre { padding: 11px; font-size: 11px; }.markdown-body ul, .markdown-body ol { padding-left: 1.25em; }.reader-back, #reader-source { min-height: 32px; font-size: 7px; }
 }
+
+/* A single, compositor-friendly motion language for page, route, and micro interactions. */
+.reveal { animation: none; }
+.access-gate { transition: opacity .24s ease, visibility .24s linear; }
+.access-gate-panel { animation: gate-panel-in .5s cubic-bezier(.22, 1, .36, 1) both; }
+.access-gate-sprite { animation: gate-drift 3.4s ease-in-out infinite; will-change: transform; }
+.access-gate-sprite.sprite-pink { animation-delay: -1.1s; }
+.terminal-card { animation: terminal-float 5.8s ease-in-out infinite; will-change: transform; }
+.theme-toggle-icon { transition: transform .32s cubic-bezier(.22, 1, .36, 1); }
+body.dark-mode .theme-toggle-icon { transform: rotate(180deg); }
+
+.motion-enabled .motion-item {
+  --motion-x: 0px;
+  --motion-y: 18px;
+  opacity: 0;
+  translate: var(--motion-x) var(--motion-y);
+  transition:
+    opacity .5s cubic-bezier(.22, 1, .36, 1),
+    translate .5s cubic-bezier(.22, 1, .36, 1);
+  transition-delay: var(--motion-delay, 0ms);
+}
+.motion-enabled .hero-visual.motion-item { --motion-x: 24px; --motion-y: 0px; }
+.motion-enabled .motion-item.is-visible { opacity: 1; translate: 0 0; }
+
+.motion-enabled .hero-visual .terminal-content > * {
+  opacity: 0;
+  translate: 0 8px;
+  transition:
+    opacity .34s ease,
+    translate .34s cubic-bezier(.22, 1, .36, 1);
+}
+.motion-enabled .hero-visual.is-visible .terminal-content > * { opacity: 1; translate: 0 0; }
+.motion-enabled .hero-visual.is-visible .terminal-content > :nth-child(1) { transition-delay: .2s; }
+.motion-enabled .hero-visual.is-visible .terminal-content > :nth-child(2) { transition-delay: .27s; }
+.motion-enabled .hero-visual.is-visible .terminal-content > :nth-child(3) { transition-delay: .34s; }
+.motion-enabled .hero-visual.is-visible .terminal-content > :nth-child(4) { transition-delay: .41s; }
+.motion-enabled .hero-visual.is-visible .terminal-content > :nth-child(5) { transition-delay: .48s; }
+
+.hero-visual > .sprite-cyan { animation: sprite-cyan-drift 4.9s ease-in-out infinite; will-change: transform; }
+.hero-visual > .sprite-pink { animation: sprite-pink-drift 5.5s ease-in-out -1.4s infinite; will-change: transform; }
+.hero-visual > .sprite-yellow { animation: sprite-yellow-drift 4.2s ease-in-out -.8s infinite; will-change: transform; }
+.pulse { position: relative; }
+.pulse::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border: 2px solid var(--ink);
+  opacity: 0;
+  animation: status-signal 1.8s ease-out infinite;
+}
+
+.button span,
+.text-link span,
+.github-link span,
+.email-link span,
+.category-card-arrow,
+.directory-note > span,
+.project-open,
+.project-visual > span,
+.project-visual > i {
+  display: inline-block;
+  transition: transform .28s cubic-bezier(.22, 1, .36, 1);
+}
+
+@media (hover: hover) {
+  .button:hover span,
+  .text-link:hover span,
+  .github-link:hover span,
+  .email-link:hover span { transform: translate3d(4px, -2px, 0); }
+  .category-card:hover .category-card-arrow,
+  .directory-note:hover > span,
+  .project-card:hover .project-open { transform: translate3d(4px, -4px, 0); }
+  .project-card:hover .project-visual > span { transform: translate3d(0, -5px, 0); }
+  .project-card:hover .project-visual > i { transform: translate3d(-3px, 3px, 0); }
+}
+
+@keyframes gate-panel-in {
+  from { opacity: 0; transform: translate3d(0, 18px, 0) scale(.985); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes gate-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  50% { transform: translate3d(0, -12px, 0) rotate(8deg); }
+}
+@keyframes terminal-float {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -7px, 0); }
+}
+@keyframes sprite-cyan-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(10deg); }
+  50% { transform: translate3d(5px, -8px, 0) rotate(16deg); }
+}
+@keyframes sprite-pink-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(-12deg); }
+  50% { transform: translate3d(-7px, -5px, 0) rotate(-18deg); }
+}
+@keyframes sprite-yellow-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(16deg); }
+  50% { transform: translate3d(-4px, 7px, 0) rotate(25deg); }
+}
+@keyframes status-signal {
+  0% { opacity: .55; transform: scale(.45); }
+  75%, 100% { opacity: 0; transform: scale(1.75); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    transition-delay: 0ms !important;
+  }
+  .motion-enabled .motion-item,
+  .motion-enabled .hero-visual .terminal-content > * { opacity: 1; translate: 0 0; }
+}

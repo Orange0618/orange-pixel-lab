@@ -60,40 +60,103 @@ const setHtml = (selector, value) => {
   if (element) element.innerHTML = value
 }
 
+const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+let motionStarted = false
+let motionObserver
+
+function getMotionObserver() {
+  if (reducedMotionQuery.matches || !('IntersectionObserver' in window)) return null
+  if (motionObserver) return motionObserver
+
+  motionObserver = new IntersectionObserver(
+    entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return
+        entry.target.classList.add('is-visible')
+        motionObserver.unobserve(entry.target)
+      })
+    },
+    { threshold: .12, rootMargin: '0px 0px -7% 0px' }
+  )
+  return motionObserver
+}
+
+function observeMotionElement(element) {
+  const observer = getMotionObserver()
+  if (!observer) {
+    element.classList.add('is-visible')
+    return
+  }
+  observer.observe(element)
+}
+
+function prepareMotionElements(elements, { start = 0, step = 70 } = {}) {
+  ;[...elements].filter(Boolean).forEach((element, index) => {
+    if (element.dataset.motionReady === 'true') return
+    element.dataset.motionReady = 'true'
+    element.classList.add('motion-item')
+    element.style.setProperty('--motion-delay', `${Math.min(start + index * step, 320)}ms`)
+    if (motionStarted) observeMotionElement(element)
+  })
+}
+
+function prepareStaticMotion() {
+  prepareMotionElements(document.querySelectorAll('#home > .reveal'), { step: 100 })
+  prepareMotionElements(document.querySelectorAll('#about .section-heading'))
+  prepareMotionElements(document.querySelectorAll('#about .bento-card'), { step: 85 })
+  prepareMotionElements(document.querySelectorAll('#notes .section-heading'))
+  prepareMotionElements(document.querySelectorAll('#projects .section-heading'))
+  prepareMotionElements(document.querySelectorAll('#projects .project-card'), { step: 55 })
+  prepareMotionElements(document.querySelectorAll('#contact .contact-inner > *'), { step: 65 })
+}
+
+function startMotion() {
+  if (motionStarted) return
+  motionStarted = true
+  document.documentElement.classList.add('motion-enabled')
+  document.querySelectorAll('.motion-item:not(.is-visible)').forEach(observeMotionElement)
+}
+
+function syncMotionPreference() {
+  document.documentElement.classList.toggle('motion-reduced', reducedMotionQuery.matches)
+  if (!motionStarted) return
+
+  if (reducedMotionQuery.matches) {
+    motionObserver?.disconnect()
+    motionObserver = undefined
+    document.querySelectorAll('.motion-item').forEach(element => element.classList.add('is-visible'))
+    return
+  }
+
+  document.querySelectorAll('.motion-item:not(.is-visible)').forEach(observeMotionElement)
+}
+
+function playRouteEntrance(elements) {
+  if (reducedMotionQuery.matches) return
+  ;[...elements].filter(Boolean).forEach((element, index) => {
+    if (typeof element.animate !== 'function') return
+    element.animate(
+      [
+        { opacity: 0, transform: 'translate3d(0, 16px, 0)' },
+        { opacity: 1, transform: 'translate3d(0, 0, 0)' }
+      ],
+      {
+        duration: 420,
+        delay: index * 65,
+        easing: 'cubic-bezier(.22, 1, .36, 1)',
+        fill: 'backwards'
+      }
+    )
+  })
+}
+
 function unlockSite() {
   sessionStorage.setItem(ACCESS_STORAGE_KEY, 'true')
   document.body.classList.remove('access-locked')
   accessGate?.setAttribute('aria-hidden', 'true')
+  window.requestAnimationFrame(startMotion)
   window.setTimeout(() => accessGate?.setAttribute('hidden', ''), 180)
 }
-
-if (sessionStorage.getItem(ACCESS_STORAGE_KEY) === 'true') {
-  unlockSite()
-} else {
-  window.setTimeout(() => accessPassword?.focus(), 80)
-}
-
-accessForm?.addEventListener('submit', event => {
-  event.preventDefault()
-  const isCorrect = accessPassword?.value === ACCESS_CODE
-
-  if (isCorrect) {
-    accessMessage.textContent = 'ACCESS GRANTED. LOADING LAB...'
-    accessMessage.classList.remove('is-error')
-    accessMessage.classList.add('is-success')
-    window.setTimeout(unlockSite, 260)
-    return
-  }
-
-  accessMessage.textContent = t('accessDenied')
-  accessMessage.classList.remove('is-success')
-  accessMessage.classList.add('is-error')
-  accessForm.classList.remove('is-invalid')
-  void accessForm.offsetWidth
-  accessForm.classList.add('is-invalid')
-  accessPassword?.focus()
-  accessPassword?.select()
-})
 
 const baseUrl = import.meta.env.BASE_URL
 const notesGrid = document.querySelector('#notes-grid')
@@ -117,6 +180,11 @@ const navLinks = document.querySelectorAll('.primary-nav a')
 const homeSections = [...document.querySelectorAll('main > section:not(.note-reader):not(.notes-directory)[id]')]
 let notes = []
 let tocHeadings = []
+let tocPositions = []
+let tocLinks = []
+let activeTocId = ''
+let tocUpdateFrame = 0
+let tocRefreshFrame = 0
 const compactReaderQuery = window.matchMedia('(max-width: 1100px)')
 
 const html = value => DOMPurify.sanitize(value, { ALLOWED_TAGS: [] })
@@ -264,6 +332,7 @@ function renderCatalog() {
   }
   notesGrid.classList.add('category-grid')
   notesGrid.innerHTML = rootDirectories.map(categoryCard).join('')
+  prepareMotionElements(notesGrid.querySelectorAll('.category-card'), { step: 70 })
 }
 
 function renderDirectory(path) {
@@ -281,6 +350,7 @@ function renderDirectory(path) {
   if (directories.length) groups.push(`<div class="category-grid">${directories.map(categoryCard).join('')}</div>`)
   if (directNotes.length) groups.push(`<div class="directory-note-list">${directNotes.map(note => noteListItem(note, path)).join('')}</div>`)
   directoryContent.innerHTML = groups.join('') || `<p class="notes-empty">${t('emptyDirectory')}</p>`
+  prepareMotionElements(directoryContent.querySelectorAll('.category-card, .directory-note'), { step: 55 })
 }
 
 function markdownToHtml(markdown) {
@@ -299,13 +369,40 @@ function addHeadingAnchors() {
 }
 
 function updateTocActive() {
-  if (!document.body.classList.contains('reading-mode') || !tocHeadings.length) return
-  let current = tocHeadings[0]
-  tocHeadings.forEach(heading => {
-    if (heading.getBoundingClientRect().top <= 138) current = heading
+  if (!document.body.classList.contains('reading-mode') || !tocPositions.length) return
+  const marker = window.scrollY + 138
+  let current = tocPositions[0]
+  for (const position of tocPositions) {
+    if (position.top > marker) break
+    current = position
+  }
+  if (current.id === activeTocId) return
+  activeTocId = current.id
+  tocLinks.forEach(link => link.classList.toggle('active', link.hash === `#${current.id}`))
+}
+
+function scheduleTocUpdate() {
+  if (tocUpdateFrame || !document.body.classList.contains('reading-mode')) return
+  tocUpdateFrame = window.requestAnimationFrame(() => {
+    tocUpdateFrame = 0
+    updateTocActive()
   })
-  readerTocLinks.querySelectorAll('a').forEach(link => {
-    link.classList.toggle('active', link.getAttribute('href') === `#${current.id}`)
+}
+
+function refreshTocPositions() {
+  tocPositions = tocHeadings.map(heading => ({
+    id: heading.id,
+    top: heading.getBoundingClientRect().top + window.scrollY
+  }))
+  activeTocId = ''
+  updateTocActive()
+}
+
+function scheduleTocRefresh() {
+  if (tocRefreshFrame || !tocHeadings.length) return
+  tocRefreshFrame = window.requestAnimationFrame(() => {
+    tocRefreshFrame = 0
+    refreshTocPositions()
   })
 }
 
@@ -320,14 +417,18 @@ function buildTableOfContents() {
     readerToc.hidden = true
     readerTocLinks.innerHTML = ''
     readerTocCount.textContent = ''
+    tocPositions = []
+    tocLinks = []
+    activeTocId = ''
     return
   }
   readerTocLinks.innerHTML = tocHeadings.map(heading => `
     <a class="toc-link toc-level-${heading.tagName.slice(1)}" href="#${heading.id}">${html(heading.textContent)}</a>`).join('')
   readerToc.hidden = false
   readerTocCount.textContent = `${String(tocHeadings.length).padStart(2, '0')} ${t('itemsUnit').toUpperCase()}`
+  tocLinks = [...readerTocLinks.querySelectorAll('.toc-link')]
   syncTocPresentation()
-  requestAnimationFrame(updateTocActive)
+  scheduleTocRefresh()
 }
 
 function makeRelativeLinksWork(note) {
@@ -353,9 +454,17 @@ async function openNote(note) {
   readerTocLinks.innerHTML = ''
   readerTocCount.textContent = ''
   tocHeadings = []
+  tocPositions = []
+  tocLinks = []
+  activeTocId = ''
   readerSource.href = noteUrl(note)
   document.title = `${note.title} | Orange Pixel Lab`
   window.scrollTo({ top: 0, behavior: 'instant' })
+  playRouteEntrance([
+    reader.querySelector('.reader-shell > .reader-back'),
+    reader.querySelector('.reader-header'),
+    reader.querySelector('.reader-layout')
+  ])
 
   try {
     const response = await fetch(noteUrl(note))
@@ -378,6 +487,7 @@ function openDirectory(path) {
   renderDirectory(path)
   document.title = `${path.at(-1)} | Orange Pixel Lab`
   window.scrollTo({ top: 0, behavior: 'instant' })
+  playRouteEntrance([directoryBack, directory.querySelector('.reader-header'), directoryContent])
   return true
 }
 
@@ -387,6 +497,9 @@ function closeSpecialViews() {
   readerToc.hidden = true
   readerTocCount.textContent = ''
   tocHeadings = []
+  tocPositions = []
+  tocLinks = []
+  activeTocId = ''
   directory.hidden = true
   document.title = 'Orange | Pixel Lab'
 }
@@ -429,8 +542,10 @@ async function initialiseNotes() {
 
 homeSections.forEach(section => sectionObserver.observe(section))
 window.addEventListener('hashchange', handleRoute)
-window.addEventListener('scroll', updateTocActive, { passive: true })
+window.addEventListener('scroll', scheduleTocUpdate, { passive: true })
+window.addEventListener('resize', scheduleTocRefresh, { passive: true })
 compactReaderQuery.addEventListener('change', syncTocPresentation)
+reducedMotionQuery.addEventListener('change', syncMotionPreference)
 themeToggle?.addEventListener('click', () => applyTheme(currentTheme === 'dark' ? 'light' : 'dark'))
 languageToggle?.addEventListener('click', () => applyLanguage(currentLanguage === 'zh' ? 'en' : 'zh'))
 readerTocLinks.addEventListener('click', event => {
@@ -440,6 +555,43 @@ readerTocLinks.addEventListener('click', event => {
   document.getElementById(link.getAttribute('href').slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   if (compactReaderQuery.matches) readerTocDetails.open = false
 })
+
+const readerResizeObserver = 'ResizeObserver' in window
+  ? new ResizeObserver(scheduleTocRefresh)
+  : null
+readerResizeObserver?.observe(readerContent)
+
+accessForm?.addEventListener('submit', event => {
+  event.preventDefault()
+  const isCorrect = accessPassword?.value === ACCESS_CODE
+
+  if (isCorrect) {
+    accessMessage.textContent = 'ACCESS GRANTED. LOADING LAB...'
+    accessMessage.classList.remove('is-error')
+    accessMessage.classList.add('is-success')
+    window.setTimeout(unlockSite, 260)
+    return
+  }
+
+  accessMessage.textContent = t('accessDenied')
+  accessMessage.classList.remove('is-success')
+  accessMessage.classList.add('is-error')
+  accessForm.classList.remove('is-invalid')
+  void accessForm.offsetWidth
+  accessForm.classList.add('is-invalid')
+  accessPassword?.focus()
+  accessPassword?.select()
+})
+
 applyTheme(currentTheme)
 applyLanguage(currentLanguage)
+prepareStaticMotion()
+syncMotionPreference()
+
+if (sessionStorage.getItem(ACCESS_STORAGE_KEY) === 'true') {
+  unlockSite()
+} else {
+  window.setTimeout(() => accessPassword?.focus(), 80)
+}
+
 initialiseNotes()

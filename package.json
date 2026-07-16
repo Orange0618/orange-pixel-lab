@@ -7,6 +7,7 @@
     "dev": "vite",
     "sync:notes": "node scripts/sync-notes.mjs",
     "verify:notes": "node scripts/verify-note-assets.mjs",
+    "test:motion": "node scripts/verify-motion.mjs",
     "build": "npm run sync:notes && npm run verify:notes && vite build",
     "preview": "vite preview"
   },
