@@ -358,6 +358,16 @@ function markdownToHtml(markdown) {
   return DOMPurify.sanitize(rawHtml, { USE_PROFILES: { html: true } })
 }
 
+function applyImageLoadingPolicy(markdownHtml) {
+  let imageIndex = 0
+  return markdownHtml.replace(/<img\b/g, () => {
+    const priority = imageIndex++ === 0
+      ? ' loading="eager" fetchpriority="high"'
+      : ' loading="lazy" fetchpriority="low"'
+    return `<img decoding="async"${priority}`
+  })
+}
+
 function noteUrl(note) {
   return `${baseUrl}${note.file.split('/').map(encodeURIComponent).join('/')}`
 }
@@ -469,7 +479,7 @@ async function openNote(note) {
   try {
     const response = await fetch(noteUrl(note))
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
-    readerContent.innerHTML = markdownToHtml(await response.text())
+    readerContent.innerHTML = applyImageLoadingPolicy(markdownToHtml(await response.text()))
     addHeadingAnchors()
     makeRelativeLinksWork(note)
     buildTableOfContents()

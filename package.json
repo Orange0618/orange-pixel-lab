@@ -16,6 +16,7 @@
     "marked": "^16.3.0"
   },
   "devDependencies": {
+    "sharp": "^0.34.5",
     "vite": "^7.0.0"
   }
 }

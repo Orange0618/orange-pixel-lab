@@ -52,10 +52,31 @@ async page => {
   }
 
   await page.getByRole('link', { name: 'DIR / 01 嵌入式 07 条记录 →' }).click()
-  await page.getByRole('link', { name: '嵌入式 / MD 电路分析 →' }).click()
+  await page.getByRole('link', { name: '嵌入式 / MD 电子基础 →' }).click()
   await page.locator('#reader-content h3').first().waitFor()
   const readerCategoryWidth = await page.locator('#reader-category').evaluate(element => element.getBoundingClientRect().width)
   if (readerCategoryWidth <= 10) {
     throw new Error(`Reader category label collapsed to ${readerCategoryWidth}px.`)
+  }
+
+  const imageLoadingPolicies = await page.locator('#reader-content img').evaluateAll(images => images.map(image => ({
+    loading: image.loading,
+    decoding: image.decoding,
+    fetchPriority: image.fetchPriority,
+    width: image.getAttribute('width'),
+    height: image.getAttribute('height')
+  })))
+  if (imageLoadingPolicies.length < 100) {
+    throw new Error(`Expected the image-heavy note fixture, found ${imageLoadingPolicies.length} images.`)
+  }
+  const [leadImage, ...deferredImages] = imageLoadingPolicies
+  if (leadImage.loading !== 'eager' || leadImage.fetchPriority !== 'high') {
+    throw new Error(`Lead note image is not prioritized: ${JSON.stringify(leadImage)}`)
+  }
+  if (deferredImages.some(image => image.loading !== 'lazy' || image.decoding !== 'async')) {
+    throw new Error('Below-the-fold note images are not deferred.')
+  }
+  if (imageLoadingPolicies.some(image => Number(image.width) <= 0 || Number(image.height) <= 0)) {
+    throw new Error('Note images do not reserve their intrinsic aspect ratio before loading.')
   }
 }

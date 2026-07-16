@@ -2,6 +2,7 @@ import { cp, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promi
 import { createHash } from 'node:crypto'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import sharp from 'sharp'
 
 const workspace = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const sourceDirectory = path.join(workspace, 'resource', 'note')
@@ -52,6 +53,19 @@ async function fetchImage(url, attempt = 1) {
   }
 }
 
+async function optimizeImage(bytes) {
+  const { data, info } = await sharp(bytes)
+    .rotate()
+    .resize({ width: 2000, height: 2000, fit: 'inside', withoutEnlargement: true })
+    .webp({ quality: 84, alphaQuality: 90, effort: 4, smartSubsample: true })
+    .toBuffer({ resolveWithObject: true })
+  return { bytes: new Uint8Array(data), width: info.width, height: info.height }
+}
+
+function escapeHtmlAttribute(value) {
+  return value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+}
+
 async function mapWithConcurrency(items, limit, worker) {
   const results = new Array(items.length)
   let cursor = 0
@@ -84,19 +98,30 @@ const localAssets = new Map()
 console.log(`Mirroring ${remoteUrls.length} Markdown images locally...`)
 await mapWithConcurrency(remoteUrls, parallelDownloads, async (url, index) => {
   const { bytes, contentType } = await fetchImage(url)
-  const assetName = `${stableSlug(url, 'image')}${imageExtension(url, contentType)}`
+  const sourceExtension = imageExtension(url, contentType)
+  const canOptimize = /^\.(avif|jpe?g|png|webp)$/.test(sourceExtension)
+  const optimized = canOptimize ? await optimizeImage(bytes) : null
+  const metadata = optimized ? null : await sharp(bytes, { animated: true }).metadata()
+  const outputBytes = optimized?.bytes ?? bytes
+  const assetName = `${stableSlug(url, 'image')}${canOptimize ? '.webp' : sourceExtension}`
   const assetFile = path.join(assetDirectory, assetName)
-  await writeFile(assetFile, bytes)
-  localAssets.set(url, assetFile)
+  await writeFile(assetFile, outputBytes)
+  localAssets.set(url, {
+    assetFile,
+    width: optimized?.width ?? metadata.width,
+    height: optimized?.height ?? metadata.height
+  })
   if ((index + 1) % 50 === 0 || index + 1 === remoteUrls.length) console.log(`  mirrored ${index + 1}/${remoteUrls.length}`)
 })
 
 await Promise.all(markdownByFile.map(async ({ file, markdown }) => {
   const rewritten = markdown.replace(imagePattern, (fullMatch, alt, url, title = '') => {
-    const assetFile = localAssets.get(url)
-    if (!assetFile) throw new Error(`No local asset generated for ${url}`)
+    const asset = localAssets.get(url)
+    if (!asset) throw new Error(`No local asset generated for ${url}`)
+    const { assetFile, width, height } = asset
     const localPath = path.relative(path.dirname(file), assetFile).split(path.sep).join('/')
-    return `![${alt}](${localPath}${title})`
+    const titleAttribute = title ? ` title="${escapeHtmlAttribute(title.slice(2, -1))}"` : ''
+    return `<img src="${localPath}" alt="${escapeHtmlAttribute(alt)}" width="${width}" height="${height}"${titleAttribute}>`
   })
   await writeFile(file, rewritten, 'utf8')
 }))
