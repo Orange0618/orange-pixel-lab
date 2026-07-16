@@ -2,6 +2,7 @@ async page => {
   await page.evaluate(() => {
     sessionStorage.clear()
     localStorage.removeItem('orange-pixel-lab-language')
+    localStorage.removeItem('orange-pixel-lab-theme')
   })
   await page.reload()
   await page.waitForTimeout(800)
@@ -34,5 +35,27 @@ async page => {
   await page.waitForTimeout(260)
   if (!await aboutHeading.evaluate(element => element.classList.contains('is-visible'))) {
     throw new Error('Section motion did not play when the section entered the viewport.')
+  }
+
+  await page.getByRole('button', { name: '切换为深色模式' }).click()
+  const darkPalette = await page.evaluate(() => ({
+    enabled: document.body.classList.contains('dark-mode'),
+    body: getComputedStyle(document.body).backgroundColor,
+    education: getComputedStyle(document.querySelector('.education-card')).backgroundColor,
+    skills: getComputedStyle(document.querySelector('.skills-card')).backgroundColor,
+    records: getComputedStyle(document.querySelector('.notes-area')).backgroundColor,
+    category: getComputedStyle(document.querySelector('.category-card')).backgroundColor
+  }))
+  const colorLayers = new Set(Object.values(darkPalette).filter(value => typeof value === 'string'))
+  if (!darkPalette.enabled || colorLayers.size < 5 || darkPalette.education === darkPalette.skills) {
+    throw new Error(`Dark theme has insufficient color hierarchy: ${JSON.stringify(darkPalette)}`)
+  }
+
+  await page.getByRole('link', { name: 'DIR / 01 嵌入式 07 条记录 →' }).click()
+  await page.getByRole('link', { name: '嵌入式 / MD 电路分析 →' }).click()
+  await page.locator('#reader-content h3').first().waitFor()
+  const readerCategoryWidth = await page.locator('#reader-category').evaluate(element => element.getBoundingClientRect().width)
+  if (readerCategoryWidth <= 10) {
+    throw new Error(`Reader category label collapsed to ${readerCategoryWidth}px.`)
   }
 }
