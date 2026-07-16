@@ -14,38 +14,38 @@ const themeToggleLabel = document.querySelector('.theme-toggle-label')
 
 const copy = {
   zh: {
-    navHome: '首页', navAbout: '关于我', navNotes: '笔记', navProjects: '项目', navContact: '联系我',
+    navHome: '首页', navAbout: '关于我', navNotes: '记录', navProjects: '项目', navContact: '联系我',
     gateCopy: '输入准入密码，进入 Orange 的个人数字实验室。', gateLabel: '准入密码', gateEnter: '进入 ↗', gateFootnote: '仅限获准访问者 / 2026',
     accessDenied: 'ACCESS DENIED. 请检查密码后重试。',
-    heroEyebrow: '个人数字实验室 / 2026', heroIntro: '啥都学点，啥都不精的业余计算机练习生。', readNotes: '阅读技术笔记 ↗', browseProjects: '浏览项目 ↗',
+    heroEyebrow: '个人数字实验室 / 2026', heroIntro: '啥都学点，啥都不精的业余计算机练习生。', readNotes: '浏览记录 ↗', browseProjects: '浏览项目 ↗',
     topicSoftware: '软件开发', topicEmbedded: '嵌入式系统', topicIot: '物联网',
     terminalAnswer: 'ORANGE · 王茂林', terminalFocus: 'focus --current', terminalOne: 'AI 原生软件开发', terminalTwo: 'STM32 与连接设备', terminalThree: '公开学习与记录', status: '当前探索中', statusValue: '构建 · 学习 · 分享',
     about: '一个持续生长的<br />技术工作台。', degreeUestc: '计算机技术 · 硕士研究生（预计入学）', degreeNjupt: '软件工程 · 本科',
     skillAi: 'AI 辅助开发', skillEmbedded: '嵌入式开发', skillSystem: '系统开发',
-    notes: '把学习过程<br />认真地写下来。', allNotes: '查看全部笔记 ↗',
-    directoryTitle: '笔记目录', directoryDefault: '按目录浏览 Orange 的技术笔记。', allCategories: '← 全部分类', allNotesBack: '← 全部笔记', source: '查看 Markdown 源文件 ↗', outline: '文章大纲',
+    notes: '把想法和时光<br />认真地记录下来。', allNotes: '查看全部记录 ↗',
+    directoryTitle: '记录目录', directoryDefault: '按目录浏览 Orange 的技术记录。', allCategories: '← 全部记录', allNotesBack: '← 返回记录', source: '查看 Markdown 源文件 ↗', outline: '文章大纲', recordsRoot: 'RECORDS',
     projects: '把想法做成<br />可以被使用的作品。',
     selfLearning: '自助学习社区', selfLearningDesc: '面向课程讨论、问答、学习资源与分角色管理的 Vue 前端。',
     teachDesc: '让 AI 在实现代码的同时解释思路的教学型 Skill。', markDesc: '将 B 站课程视频整理为可阅读 Markdown 笔记的 Agent Skill。', diaryDesc: '本地优先、注重隐私与轻量记录体验的 Flutter 日记应用。', passwordDesc: '支持系统验证与安全存储的本地 Android 密码管理工具。', snakeDesc: '南京邮电大学 Flutter 课程实验：经典贪吃蛇小游戏。', pythonDesc: '线性回归、逻辑回归、KNN 与 KMeans 的 Python 算法练习。',
     contactTitle: '有想法？<br /><em>我们聊聊。</em>', contactCopy: '欢迎交流软件开发、AI 辅助编程、嵌入式系统与物联网相关话题。',
-    notesUnit: '篇笔记', itemsUnit: '项', directorySummary: '当前目录包含 {notes} 篇 Markdown 笔记{directories}。', childDirectories: '，以及 {count} 个子目录', loadingNote: '正在加载笔记...', noteError: '暂时无法读取这篇 Markdown 笔记。', openSource: '打开 Markdown 源文件 ↗', emptyDirectory: '此目录暂时为空。', missingNotes: '未找到笔记目录。', missingManifest: '笔记索引暂不可用。', themeToDark: '切换为深色模式', themeToLight: '切换为浅色模式', languageToEnglish: '切换为英文', languageToChinese: '切换为中文'
+    notesUnit: '条记录', itemsUnit: '项', directorySummary: '当前目录包含 {notes} 条 Markdown 记录{directories}。', childDirectories: '，以及 {count} 个子目录', loadingNote: '正在加载记录...', noteError: '暂时无法读取这条 Markdown 记录。', openSource: '打开 Markdown 源文件 ↗', emptyDirectory: '此目录暂时为空。', missingNotes: '未找到记录目录。', missingManifest: '记录索引暂不可用。', themeToDark: '切换为深色模式', themeToLight: '切换为浅色模式', languageToEnglish: '切换为英文', languageToChinese: '切换为中文'
   },
   en: {
-    navHome: 'Home', navAbout: 'About', navNotes: 'Notes', navProjects: 'Projects', navContact: 'Contact',
+    navHome: 'Home', navAbout: 'About', navNotes: 'Records', navProjects: 'Projects', navContact: 'Contact',
     gateCopy: "Enter the access code to open Orange's personal digital lab.", gateLabel: 'ACCESS CODE', gateEnter: 'ENTER ↗', gateFootnote: 'AUTHORIZED VISITORS ONLY / 2026',
     accessDenied: 'ACCESS DENIED. Check the code and try again.',
-    heroEyebrow: 'PERSONAL DIGITAL LAB / 2026', heroIntro: 'A hobbyist computer learner: learning a little of everything, mastering none of it yet.', readNotes: 'READ NOTES ↗', browseProjects: 'VIEW PROJECTS ↗',
+    heroEyebrow: 'PERSONAL DIGITAL LAB / 2026', heroIntro: 'A hobbyist computer learner: learning a little of everything, mastering none of it yet.', readNotes: 'EXPLORE RECORDS ↗', browseProjects: 'VIEW PROJECTS ↗',
     topicSoftware: 'Software Development', topicEmbedded: 'Embedded Systems', topicIot: 'Internet of Things',
     terminalAnswer: 'ORANGE · Wang Maolin', terminalFocus: 'focus --current', terminalOne: 'AI-native software making', terminalTwo: 'STM32 & connected devices', terminalThree: 'learning in public', status: 'CURRENTLY EXPLORING', statusValue: 'Build · Learn · Share',
     about: 'A technical workbench<br />that keeps growing.', degreeUestc: 'Computer Technology · MEng Candidate', degreeNjupt: 'Software Engineering · BEng',
     skillAi: 'AI-assisted development', skillEmbedded: 'Embedded development', skillSystem: 'System development',
-    notes: 'Write the learning process<br />down with care.', allNotes: 'VIEW ALL NOTES ↗',
-    directoryTitle: 'Notes Directory', directoryDefault: "Browse Orange's technical notes by directory.", allCategories: '← ALL CATEGORIES', allNotesBack: '← ALL NOTES', source: 'VIEW MARKDOWN SOURCE ↗', outline: 'OUTLINE',
+    notes: 'Save ideas and moments<br />with care.', allNotes: 'VIEW ALL RECORDS ↗',
+    directoryTitle: 'Records Directory', directoryDefault: "Browse Orange's technical records by directory.", allCategories: '← ALL RECORDS', allNotesBack: '← BACK TO RECORDS', source: 'VIEW MARKDOWN SOURCE ↗', outline: 'OUTLINE', recordsRoot: 'RECORDS',
     projects: 'Turn ideas into<br />things people can use.',
     selfLearning: 'Self-Help Learning Community', selfLearningDesc: 'A Vue frontend for course discussions, Q&A, learning resources, and role-based management.',
     teachDesc: 'A teaching Skill that asks AI to explain its thinking while it implements code.', markDesc: 'An Agent Skill that turns Bilibili course videos into readable Markdown notes.', diaryDesc: 'A local-first Flutter diary focused on privacy and lightweight journaling.', passwordDesc: 'A local Android password manager with system authentication and secure storage.', snakeDesc: 'A classic Snake game built as an NJUPT Flutter course project.', pythonDesc: 'Python exercises for linear and logistic regression, KNN, and KMeans.',
     contactTitle: 'Have an idea?<br /><em>Let’s talk.</em>', contactCopy: 'I welcome conversations about software development, AI-assisted coding, embedded systems, and IoT.',
-    notesUnit: 'notes', itemsUnit: 'items', directorySummary: 'This directory contains {notes} Markdown notes{directories}.', childDirectories: ' and {count} subdirectories', loadingNote: 'LOADING NOTE...', noteError: 'This Markdown note is temporarily unavailable.', openSource: 'OPEN MARKDOWN SOURCE ↗', emptyDirectory: 'THIS DIRECTORY IS EMPTY.', missingNotes: 'NO NOTE DIRECTORIES FOUND.', missingManifest: 'NOTES MANIFEST IS UNAVAILABLE.', themeToDark: 'Switch to dark mode', themeToLight: 'Switch to light mode', languageToEnglish: 'Switch to English', languageToChinese: '切换为中文'
+    notesUnit: 'records', itemsUnit: 'items', directorySummary: 'This directory contains {notes} Markdown records{directories}.', childDirectories: ' and {count} subdirectories', loadingNote: 'LOADING RECORD...', noteError: 'This Markdown record is temporarily unavailable.', openSource: 'OPEN MARKDOWN SOURCE ↗', emptyDirectory: 'THIS DIRECTORY IS EMPTY.', missingNotes: 'NO RECORD DIRECTORIES FOUND.', missingManifest: 'RECORDS MANIFEST IS UNAVAILABLE.', themeToDark: 'Switch to dark mode', themeToLight: 'Switch to light mode', languageToEnglish: 'Switch to English', languageToChinese: '切换为中文'
   }
 }
 
@@ -191,8 +191,8 @@ function applyLanguage(language) {
   setText('.toc-label', t('outline'))
   setText('#directory-title', t('directoryTitle'))
   setText('#directory-summary', t('directoryDefault'))
-  setText('#reader-title', language === 'en' ? 'Loading note...' : '正在加载笔记…')
-  setText('#reader-summary', language === 'en' ? 'Reading Markdown from the personal notes library.' : '从个人笔记库读取 Markdown 内容。')
+  setText('#reader-title', language === 'en' ? 'Loading record...' : '正在加载记录…')
+  setText('#reader-summary', language === 'en' ? 'Reading Markdown from the personal records library.' : '从个人记录库读取 Markdown 内容。')
   document.querySelector('#reader-toc')?.setAttribute('aria-label', t('outline'))
   document.querySelector('#reader-toc-links')?.setAttribute('aria-label', t('outline'))
 
@@ -269,7 +269,7 @@ function renderCatalog() {
 function renderDirectory(path) {
   const directNotes = notes.filter(note => samePath(note.categoryPath, path))
   const directories = childDirectories(path)
-  directoryPath.textContent = `NOTES / ${path.join(' / ').toUpperCase()}`
+  directoryPath.textContent = `${t('recordsRoot')} / ${path.join(' / ').toUpperCase()}`
   directoryTitle.textContent = path.at(-1) ?? t('directoryTitle')
   directorySummary.textContent = t('directorySummary', {
     notes: directNotes.length,
